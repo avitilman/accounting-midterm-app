@@ -165,6 +165,8 @@ async function submitExam(event) {
   });
 
   const correct = answers.filter(answer => answer.isCorrect).length;
+  const scorePoints = correct * 10;
+  const totalPoints = activeExam.questions.length * 10;
   const submission = {
     submissionId: activeExam.submissionId,
     submittedAt: new Date().toISOString(),
@@ -173,8 +175,10 @@ async function submitExam(event) {
     seed: activeExam.seed,
     selectedSets: activeExam.selectedSets,
     topicOrder: activeExam.topicOrder,
-    score: correct,
+    score: scorePoints,
+    correctCount: correct,
     total: activeExam.questions.length,
+    totalPoints,
     percent: Math.round((correct / activeExam.questions.length) * 100),
     answers
   };
@@ -293,7 +297,7 @@ function renderSubmissionRows(submissions) {
       <td>${new Date(submission.submittedAt).toLocaleString("he-IL")}</td>
       <td>${escapeHtml(submission.name)}</td>
       <td>${escapeHtml(submission.studentId)}</td>
-      <td><span class="correct">${submission.score}/${submission.total}</span> (${submission.percent}%)</td>
+      <td><span class="correct">${submission.score}/${submission.totalPoints || submission.total * 10}</span> (${submission.correctCount ?? Math.round(submission.percent * submission.total / 100)}/${submission.total} שאלות, ${submission.percent}%)</td>
       <td>${Object.entries(submission.selectedSets).map(([topic, set]) => `<span class="pill">${EXAM_BANK[topic].title}: ${set}</span>`).join(" ")}</td>
       <td>${submission.topicOrder.map(topic => EXAM_BANK[topic].title).join(" ← ")}</td>
     `;
@@ -311,7 +315,7 @@ function exportCsv() {
     for (const answer of submission.answers || []) {
       rows.push([
         submission.submittedAt, submission.name, submission.studentId, submission.score,
-        submission.total, submission.percent, answer.order, answer.topicTitle, answer.setId,
+        submission.totalPoints || submission.total * 10, submission.percent, answer.order, answer.topicTitle, answer.setId,
         answer.questionId, answer.prompt, answer.selectedText, answer.correctText, answer.isCorrect
       ]);
     }
