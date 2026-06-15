@@ -1,7 +1,7 @@
-window.EXAM_CONFIG = {
+﻿window.EXAM_CONFIG = {
   title: "מבחן אמצע - חשבונאות מתקדמת",
   localStorageKey: "advanced-accounting-midterm-submissions-v1",
-  googleScriptUrl: "",
+  googleScriptUrl: "https://script.google.com/macros/s/AKfycbz97trEA8xO9DOHa-vhfQ57o6jNdQYCJ3YMtN-jq_wE4M6ae-RNv3kStBWS-VCoHCDTDA/exec",
   questionsPerTopic: {
     cashflow: 5,
     loans: 3,
@@ -133,3 +133,4 @@ function bondSet(id, company, face, coupon, market, maturity, earlyRedemption, a
     ]
   };
 }
+
