@@ -253,20 +253,23 @@ function getExamWindowState(now = new Date()) {
 
 function renderScheduleNotice(state) {
   if (!els.examScheduleNotice) return;
-  const visibleEnd = formatHebrewDateTime(state.displayedEndsAt);
+  const visibleEnd = formatTime(state.displayedEndsAt);
   const start = formatHebrewDateTime(state.startsAt);
+  const regularEnd = formatTime(new Date(EXAM_CONFIG.examWindow.displayedRegularEndsAt));
+  const extendedEnd = formatTime(new Date(EXAM_CONFIG.examWindow.displayedExtendedEndsAt));
+  const scheduleText = `מועד הבחינה: יום רביעי 17.6.2026, ${formatTime(state.startsAt)}-${regularEnd}. לבעלי הארכת זמן: עד ${extendedEnd}.`;
   els.examScheduleNotice.classList.remove("open", "blocked");
   els.studentForm.querySelector("button[type='submit']").disabled = !state.canStart;
 
   if (state.isPreview) {
     els.examScheduleNotice.classList.add("open");
-    els.examScheduleNotice.textContent = `מצב בדיקה פעיל. בבחינה האמיתית הבחינה תיפתח ביום ${start}. זמן הסיום שיוצג עבורך: ${visibleEnd}.`;
+    els.examScheduleNotice.textContent = `מצב בדיקה פעיל. ${scheduleText}`;
   } else if (state.isBeforeStart) {
     els.examScheduleNotice.classList.add("blocked");
-    els.examScheduleNotice.textContent = `הבחינה תיפתח ביום ${start}. זמן הסיום שיוצג עבורך: ${visibleEnd}.`;
+    els.examScheduleNotice.textContent = `${scheduleText} הכניסה תיפתח ב-${start}.`;
   } else if (state.isAfterHardEnd) {
     els.examScheduleNotice.classList.add("blocked");
-    els.examScheduleNotice.textContent = "מועד הבחינה הסתיים.";
+    els.examScheduleNotice.textContent = `${scheduleText} מועד הבחינה הסתיים.`;
   } else {
     els.examScheduleNotice.classList.add("open");
     els.examScheduleNotice.textContent = `הבחינה פתוחה. זמן הסיום שיוצג עבורך: ${visibleEnd}.`;
