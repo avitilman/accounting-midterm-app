@@ -5,6 +5,10 @@
 ## מה האפליקציה עושה
 
 - סטודנט מזין שם ותעודת זהות.
+- הבחינה נפתחת ביום 17.6.2026 בשעה 17:15.
+- לסטודנטים רגילים מוצג זמן סיום 18:00.
+- לבעלי הארכת זמן מוצג זמן סיום 18:15 באמצעות קישור ייעודי.
+- בפועל המערכת מקבלת הגשות עד 18:15.
 - מתקבלת בחינה של 11 שאלות:
   - 5 שאלות תזרים מזומנים.
   - 3 שאלות הלוואות והצמדות.
@@ -17,6 +21,32 @@
 ## הפעלה מקומית
 
 פתח את הקובץ `index.html` בדפדפן.
+
+## קישורים לשימוש
+
+קישור רגיל לסטודנטים:
+
+```text
+https://avitilman.github.io/accounting-midterm-app/
+```
+
+קישור לבעלי הארכת זמן:
+
+```text
+https://avitilman.github.io/accounting-midterm-app/?extra=1
+```
+
+קישור מרצה:
+
+```text
+https://avitilman.github.io/accounting-midterm-app/?teacher=1
+```
+
+קישור בדיקה לפני מועד הבחינה:
+
+```text
+https://avitilman.github.io/accounting-midterm-app/?teacher=1&preview=1
+```
 
 ## העלאה ל-GitHub Pages
 

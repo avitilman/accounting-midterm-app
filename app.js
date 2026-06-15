@@ -1,11 +1,13 @@
 const els = {};
 let activeExam = null;
 let importedSubmissions = null;
+let clockTimer = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   bindElements();
   bindEvents();
   configureTeacherAccess();
+  renderScheduleNotice(getExamWindowState());
   renderTeacher();
 });
 
@@ -13,7 +15,7 @@ function bindElements() {
   [
     "studentTab", "teacherTab", "studentView", "teacherView", "studentForm",
     "studentStart", "examArea", "examForm", "examStudentName", "examMeta",
-    "resetExam", "studentDone", "doneMessage", "newSubmission", "refreshStats",
+    "examScheduleNotice", "examClock", "resetExam", "studentDone", "doneMessage", "newSubmission", "refreshStats",
     "exportCsv", "exportJson", "importJson", "clearLocal", "statSubmissions",
     "statAverage", "statMedian", "statRange", "questionStats", "submissionsTable"
   ].forEach(id => els[id] = document.getElementById(id));
@@ -53,11 +55,17 @@ function switchView(view) {
 
 function startExam(event) {
   event.preventDefault();
+  const windowState = getExamWindowState();
+  if (!windowState.canStart) {
+    renderScheduleNotice(windowState);
+    return;
+  }
   const name = document.getElementById("studentName").value.trim();
   const id = document.getElementById("studentId").value.trim();
   const seed = hashString(`${name}|${id}|${EXAM_CONFIG.title}`);
   activeExam = buildExam(name, id, seed);
   renderExam(activeExam);
+  startClock();
   els.studentStart.classList.add("hidden");
   els.studentDone.classList.add("hidden");
   els.examArea.classList.remove("hidden");
@@ -143,6 +151,11 @@ function renderExam(exam) {
 async function submitExam(event) {
   event.preventDefault();
   if (!activeExam) return;
+  const windowState = getExamWindowState();
+  if (windowState.isAfterHardEnd) {
+    alert("מועד ההגשה הסתיים.");
+    return;
+  }
 
   const answers = activeExam.questions.map((question, index) => {
     const selected = Number(new FormData(els.examForm).get(`q${index}`));
@@ -207,11 +220,111 @@ async function sendToSheet(submission) {
 
 function resetStudent() {
   activeExam = null;
+  stopClock();
   els.studentForm.reset();
   els.examForm.innerHTML = "";
   els.studentStart.classList.remove("hidden");
   els.examArea.classList.add("hidden");
   els.studentDone.classList.add("hidden");
+  renderScheduleNotice(getExamWindowState());
+}
+
+function getExamWindowState(now = new Date()) {
+  const params = new URLSearchParams(window.location.search);
+  const hasExtension = params.get("extra") === "1" || params.get("extension") === "1";
+  const isPreview = params.get("teacher") === "1" && params.get("preview") === "1";
+  const config = EXAM_CONFIG.examWindow;
+  const startsAt = new Date(config.startsAt);
+  const displayedEndsAt = new Date(hasExtension ? config.displayedExtendedEndsAt : config.displayedRegularEndsAt);
+  const hardEndsAt = new Date(config.hardEndsAt);
+  return {
+    now,
+    hasExtension,
+    startsAt,
+    displayedEndsAt,
+    hardEndsAt,
+    isPreview,
+    canStart: isPreview || (now >= startsAt && now <= hardEndsAt),
+    isBeforeStart: now < startsAt,
+    isAfterDisplayedEnd: now > displayedEndsAt,
+    isAfterHardEnd: !isPreview && now > hardEndsAt
+  };
+}
+
+function renderScheduleNotice(state) {
+  if (!els.examScheduleNotice) return;
+  const visibleEnd = formatHebrewDateTime(state.displayedEndsAt);
+  const start = formatHebrewDateTime(state.startsAt);
+  els.examScheduleNotice.classList.remove("open", "blocked");
+  els.studentForm.querySelector("button[type='submit']").disabled = !state.canStart;
+
+  if (state.isPreview) {
+    els.examScheduleNotice.classList.add("open");
+    els.examScheduleNotice.textContent = `מצב בדיקה פעיל. בבחינה האמיתית הבחינה תיפתח ביום ${start}. זמן הסיום שיוצג עבורך: ${visibleEnd}.`;
+  } else if (state.isBeforeStart) {
+    els.examScheduleNotice.classList.add("blocked");
+    els.examScheduleNotice.textContent = `הבחינה תיפתח ביום ${start}. זמן הסיום שיוצג עבורך: ${visibleEnd}.`;
+  } else if (state.isAfterHardEnd) {
+    els.examScheduleNotice.classList.add("blocked");
+    els.examScheduleNotice.textContent = "מועד הבחינה הסתיים.";
+  } else {
+    els.examScheduleNotice.classList.add("open");
+    els.examScheduleNotice.textContent = `הבחינה פתוחה. זמן הסיום שיוצג עבורך: ${visibleEnd}.`;
+  }
+}
+
+function startClock() {
+  stopClock();
+  const tick = () => {
+    const state = getExamWindowState();
+    const visibleEnd = formatTime(state.displayedEndsAt);
+    if (state.isAfterHardEnd) {
+      els.examClock.textContent = "מועד ההגשה הסתיים.";
+      els.examClock.classList.remove("open");
+      const submitButton = document.querySelector("#submitPanel button[type='submit']");
+      if (submitButton) submitButton.disabled = true;
+      return;
+    }
+    els.examClock.classList.add("open");
+    if (state.isPreview) {
+      els.examClock.textContent = "מצב בדיקה פעיל. חלון הזמן האמיתי לא נאכף בקישור זה.";
+      return;
+    }
+    if (state.isAfterDisplayedEnd && !state.hasExtension) {
+      els.examClock.textContent = `זמן סיום: ${visibleEnd}. זמן נותר: 0:00.`;
+      return;
+    }
+    els.examClock.textContent = `זמן סיום: ${visibleEnd}. זמן נותר: ${formatDuration(state.displayedEndsAt - state.now)}.`;
+  };
+  tick();
+  clockTimer = setInterval(tick, 1000);
+}
+
+function stopClock() {
+  if (clockTimer) clearInterval(clockTimer);
+  clockTimer = null;
+}
+
+function formatHebrewDateTime(date) {
+  return date.toLocaleString("he-IL", {
+    weekday: "long",
+    day: "numeric",
+    month: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function formatTime(date) {
+  return date.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
+}
+
+function formatDuration(ms) {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
 function saveLocalSubmission(submission) {

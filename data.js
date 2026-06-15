@@ -2,6 +2,12 @@
   title: "מבחן אמצע - חשבונאות מתקדמת",
   localStorageKey: "advanced-accounting-midterm-submissions-v1",
   googleScriptUrl: "https://script.google.com/macros/s/AKfycbz97trEA8xO9DOHa-vhfQ57o6jNdQYCJ3YMtN-jq_wE4M6ae-RNv3kStBWS-VCoHCDTDA/exec",
+  examWindow: {
+    startsAt: "2026-06-17T17:15:00+03:00",
+    displayedRegularEndsAt: "2026-06-17T18:00:00+03:00",
+    displayedExtendedEndsAt: "2026-06-17T18:15:00+03:00",
+    hardEndsAt: "2026-06-17T18:15:00+03:00"
+  },
   questionsPerTopic: {
     cashflow: 5,
     loans: 3,
