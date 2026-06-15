@@ -22,6 +22,9 @@
     <section id="studentView" class="view active" aria-labelledby="studentTitle">
       <section id="studentStart" class="panel">
         <h2 id="studentTitle">כניסה לבחינה</h2>
+        <div id="examScheduleNotice" class="schedule-notice blocked">
+          הבחינה טרם החלה. הבחינה תתחיל ביום רביעי 17.6.2026 בשעה 17:15 - 18:00.
+        </div>
         <form id="studentForm" class="form-grid">
           <label>
             שם מלא
@@ -41,6 +44,7 @@
           <div>
             <h2 id="examStudentName"></h2>
             <p id="examMeta"></p>
+            <p id="examClock" class="clock"></p>
           </div>
           <button id="resetExam" class="secondary" type="button">התחלה מחדש</button>
         </div>

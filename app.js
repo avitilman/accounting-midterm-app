@@ -254,25 +254,30 @@ function getExamWindowState(now = new Date()) {
 function renderScheduleNotice(state) {
   if (!els.examScheduleNotice) return;
   const visibleEnd = formatTime(state.displayedEndsAt);
-  const start = formatHebrewDateTime(state.startsAt);
+  const startTime = formatTime(state.startsAt);
   const regularEnd = formatTime(new Date(EXAM_CONFIG.examWindow.displayedRegularEndsAt));
   const extendedEnd = formatTime(new Date(EXAM_CONFIG.examWindow.displayedExtendedEndsAt));
-  const scheduleText = `מועד הבחינה: יום רביעי 17.6.2026, ${formatTime(state.startsAt)}-${regularEnd}. לבעלי הארכת זמן: עד ${extendedEnd}.`;
+  const regularBeforeText = `הבחינה טרם החלה. הבחינה תתחיל ביום רביעי 17.6.2026 בשעה ${startTime} - ${regularEnd}.`;
+  const extendedBeforeText = `קישור זה מיועד רק לסטודנטים שאושרה להם הארכת זמן. הבחינה טרם החלה. הבחינה תתחיל ביום רביעי 17.6.2026 בשעה ${startTime} - ${extendedEnd}.`;
+  const beforeText = state.hasExtension ? extendedBeforeText : regularBeforeText;
+  const activeText = state.hasExtension
+    ? `קישור זה מיועד רק לסטודנטים שאושרה להם הארכת זמן. הבחינה פתוחה עד ${extendedEnd}.`
+    : `הבחינה פתוחה עד ${regularEnd}.`;
   els.examScheduleNotice.classList.remove("open", "blocked");
   els.studentForm.querySelector("button[type='submit']").disabled = !state.canStart;
 
   if (state.isPreview) {
     els.examScheduleNotice.classList.add("open");
-    els.examScheduleNotice.textContent = `מצב בדיקה פעיל. ${scheduleText}`;
+    els.examScheduleNotice.textContent = `מצב בדיקה פעיל. ${beforeText}`;
   } else if (state.isBeforeStart) {
     els.examScheduleNotice.classList.add("blocked");
-    els.examScheduleNotice.textContent = `${scheduleText} הכניסה תיפתח ב-${start}.`;
+    els.examScheduleNotice.textContent = beforeText;
   } else if (state.isAfterHardEnd) {
     els.examScheduleNotice.classList.add("blocked");
-    els.examScheduleNotice.textContent = `${scheduleText} מועד הבחינה הסתיים.`;
+    els.examScheduleNotice.textContent = "מועד הבחינה הסתיים.";
   } else {
     els.examScheduleNotice.classList.add("open");
-    els.examScheduleNotice.textContent = `הבחינה פתוחה. זמן הסיום שיוצג עבורך: ${visibleEnd}.`;
+    els.examScheduleNotice.textContent = activeText || `הבחינה פתוחה. זמן הסיום שיוצג עבורך: ${visibleEnd}.`;
   }
 }
 
