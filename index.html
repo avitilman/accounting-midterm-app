@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>מבחן אמצע - חשבונאות מתקדמת</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>מבחן אמצע - חשבונאות מתקדמת למנהל עסקים</h1>
+      <p>11 שאלות אמריקאיות, סטים ושאלות מעורבלים לכל סטודנט</p>
+    </div>
+    <nav class="tabs" aria-label="ניווט">
+      <button id="studentTab" class="tab active" type="button">סטודנט</button>
+      <button id="teacherTab" class="tab" type="button">מרצה</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="studentView" class="view active" aria-labelledby="studentTitle">
+      <section id="studentStart" class="panel">
+        <h2 id="studentTitle">כניסה לבחינה</h2>
+        <form id="studentForm" class="form-grid">
+          <label>
+            שם מלא
+            <input id="studentName" name="studentName" autocomplete="name" required>
+          </label>
+          <label>
+            תעודת זהות
+            <input id="studentId" name="studentId" inputmode="numeric" pattern="[0-9]{5,12}" required>
+          </label>
+          <button class="primary" type="submit">התחלת בחינה</button>
+        </form>
+        <p class="note">הגרסה נקבעת לפי השם ותעודת הזהות. אם סטודנט ירענן את הדף ויכניס אותם פרטים, יקבל את אותה גרסה.</p>
+      </section>
+
+      <section id="examArea" class="hidden">
+        <div class="exam-header">
+          <div>
+            <h2 id="examStudentName"></h2>
+            <p id="examMeta"></p>
+          </div>
+          <button id="resetExam" class="secondary" type="button">התחלה מחדש</button>
+        </div>
+        <form id="examForm"></form>
+        <section id="submitPanel" class="submit-panel">
+          <button class="primary" type="submit" form="examForm">שליחת תשובות</button>
+          <p class="note">לאחר השליחה יוצג אישור. אם הוגדר Google Sheet, התשובות יישלחו אליו; אחרת יישמרו בדפדפן זה בלבד וניתן לייצא אותן מממשק המרצה.</p>
+        </section>
+      </section>
+
+      <section id="studentDone" class="panel hidden">
+        <h2>התשובות נקלטו</h2>
+        <p id="doneMessage"></p>
+        <button id="newSubmission" class="secondary" type="button">הגשת סטודנט נוסף</button>
+      </section>
+    </section>
+
+    <section id="teacherView" class="view" aria-labelledby="teacherTitle">
+      <section class="panel">
+        <h2 id="teacherTitle">ממשק מרצה</h2>
+        <div class="toolbar">
+          <button id="refreshStats" class="secondary" type="button">רענון נתונים מקומיים</button>
+          <button id="exportCsv" class="secondary" type="button">ייצוא CSV</button>
+          <button id="exportJson" class="secondary" type="button">ייצוא JSON</button>
+          <label class="import-button">
+            ייבוא JSON
+            <input id="importJson" type="file" accept="application/json">
+          </label>
+          <button id="clearLocal" class="danger" type="button">מחיקת נתונים מקומיים</button>
+        </div>
+        <p class="note">ב-GitHub Pages הנתונים נשמרים בדפדפן בלבד, אלא אם מחברים Google Apps Script. לאחר חיבור Sheet, אפשר לנתח את היצוא מה-Sheet או לייבא JSON לכאן.</p>
+      </section>
+
+      <section class="stats-grid" aria-live="polite">
+        <article class="stat-card">
+          <span>מספר הגשות</span>
+          <strong id="statSubmissions">0</strong>
+        </article>
+        <article class="stat-card">
+          <span>ציון ממוצע</span>
+          <strong id="statAverage">-</strong>
+        </article>
+        <article class="stat-card">
+          <span>חציון</span>
+          <strong id="statMedian">-</strong>
+        </article>
+        <article class="stat-card">
+          <span>טווח ציונים</span>
+          <strong id="statRange">-</strong>
+        </article>
+      </section>
+
+      <section class="panel">
+        <h3>ניתוח לפי שאלה</h3>
+        <div class="table-wrap">
+          <table id="questionStats">
+            <thead>
+              <tr>
+                <th>שאלה</th>
+                <th>נושא</th>
+                <th>סט</th>
+                <th>אחוז הצלחה</th>
+                <th>מספר תשובות</th>
+                <th>התפלגות בחירות</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h3>הגשות</h3>
+        <div class="table-wrap">
+          <table id="submissionsTable">
+            <thead>
+              <tr>
+                <th>זמן</th>
+                <th>שם</th>
+                <th>ת.ז.</th>
+                <th>ציון</th>
+                <th>סטים</th>
+                <th>סדר נושאים</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <template id="questionTemplate">
+    <article class="question-card">
+      <header>
+        <span class="question-number"></span>
+        <span class="question-topic"></span>
+      </header>
+      <div class="prompt"></div>
+      <div class="options"></div>
+    </article>
+  </template>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
