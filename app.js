@@ -5,6 +5,7 @@ let importedSubmissions = null;
 document.addEventListener("DOMContentLoaded", () => {
   bindElements();
   bindEvents();
+  configureTeacherAccess();
   renderTeacher();
 });
 
@@ -30,6 +31,15 @@ function bindEvents() {
   els.exportJson.addEventListener("click", exportJson);
   els.importJson.addEventListener("change", importJson);
   els.clearLocal.addEventListener("click", clearLocal);
+}
+
+function configureTeacherAccess() {
+  const params = new URLSearchParams(window.location.search);
+  const teacherMode = params.get("teacher") === "1";
+  els.teacherTab.hidden = !teacherMode;
+  if (!teacherMode) {
+    switchView("student");
+  }
 }
 
 function switchView(view) {
