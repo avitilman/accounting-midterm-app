@@ -234,6 +234,7 @@ function getExamWindowState(now = new Date()) {
   const hasExtension = params.get("extra") === "1" || params.get("extension") === "1";
   const isPreview = params.get("teacher") === "1" && params.get("preview") === "1";
   const config = EXAM_CONFIG.examWindow;
+  const hasLateAccess = config.lateAccessEnabled === true && params.get("late") === config.lateAccessCode;
   const startsAt = new Date(config.startsAt);
   const displayedEndsAt = new Date(hasExtension ? config.displayedExtendedEndsAt : config.displayedRegularEndsAt);
   const hardEndsAt = new Date(config.hardEndsAt);
@@ -244,10 +245,11 @@ function getExamWindowState(now = new Date()) {
     displayedEndsAt,
     hardEndsAt,
     isPreview,
-    canStart: isPreview || (now >= startsAt && now <= hardEndsAt),
+    hasLateAccess,
+    canStart: isPreview || (now >= startsAt && (hasLateAccess || now <= hardEndsAt)),
     isBeforeStart: now < startsAt,
     isAfterDisplayedEnd: now > displayedEndsAt,
-    isAfterHardEnd: !isPreview && now > hardEndsAt
+    isAfterHardEnd: !isPreview && !hasLateAccess && now > hardEndsAt
   };
 }
 
@@ -259,6 +261,7 @@ function renderScheduleNotice(state) {
   const extendedEnd = formatTime(new Date(EXAM_CONFIG.examWindow.displayedExtendedEndsAt));
   const regularBeforeText = `הבחינה טרם החלה. הבחינה תתחיל ביום רביעי 17.6.2026 בשעה ${startTime} - ${regularEnd}.`;
   const extendedBeforeText = `קישור זה מיועד רק לסטודנטים שאושרה להם הארכת זמן. הבחינה טרם החלה. הבחינה תתחיל ביום רביעי 17.6.2026 בשעה ${startTime} - ${extendedEnd}.`;
+  const lateBeforeText = `קישור זה מיועד לסטודנטים שקיבלו אישור כניסה חריג. הבחינה תיפתח ביום רביעי 17.6.2026 בשעה ${startTime}.`;
   const beforeText = state.hasExtension ? extendedBeforeText : regularBeforeText;
   const activeText = state.hasExtension
     ? `קישור זה מיועד רק לסטודנטים שאושרה להם הארכת זמן. הבחינה פתוחה עד ${extendedEnd}.`
@@ -269,6 +272,12 @@ function renderScheduleNotice(state) {
   if (state.isPreview) {
     els.examScheduleNotice.classList.add("open");
     els.examScheduleNotice.textContent = `מצב בדיקה פעיל. ${beforeText}`;
+  } else if (state.hasLateAccess && state.isBeforeStart) {
+    els.examScheduleNotice.classList.add("blocked");
+    els.examScheduleNotice.textContent = lateBeforeText;
+  } else if (state.hasLateAccess) {
+    els.examScheduleNotice.classList.add("open");
+    els.examScheduleNotice.textContent = "קישור זה מיועד לסטודנטים שקיבלו אישור כניסה חריג. הבחינה פתוחה.";
   } else if (state.isBeforeStart) {
     els.examScheduleNotice.classList.add("blocked");
     els.examScheduleNotice.textContent = beforeText;
@@ -296,6 +305,10 @@ function startClock() {
     els.examClock.classList.add("open");
     if (state.isPreview) {
       els.examClock.textContent = "מצב בדיקה פעיל. חלון הזמן האמיתי לא נאכף בקישור זה.";
+      return;
+    }
+    if (state.hasLateAccess) {
+      els.examClock.textContent = "כניסה חריגה פעילה. אין שעת סגירה מוגדרת בקישור זה.";
       return;
     }
     if (state.isAfterDisplayedEnd && !state.hasExtension) {
