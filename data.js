@@ -6,7 +6,7 @@
     startsAt: "2026-06-17T14:00:00+03:00",
     displayedRegularEndsAt: "2026-06-17T14:45:00+03:00",
     displayedExtendedEndsAt: "2026-06-17T15:00:00+03:00",
-    hardEndsAt: "2026-06-17T15:15:00+03:00",
+    hardEndsAt: "2026-06-17T15:30:00+03:00",
     lateAccessEnabled: true,
     lateAccessCode: "late-66262"
   },

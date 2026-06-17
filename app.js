@@ -246,10 +246,10 @@ function getExamWindowState(now = new Date()) {
     hardEndsAt,
     isPreview,
     hasLateAccess,
-    canStart: isPreview || (now >= startsAt && (hasLateAccess || now <= hardEndsAt)),
+    canStart: isPreview || (now >= startsAt && now <= hardEndsAt),
     isBeforeStart: now < startsAt,
     isAfterDisplayedEnd: now > displayedEndsAt,
-    isAfterHardEnd: !isPreview && !hasLateAccess && now > hardEndsAt
+    isAfterHardEnd: !isPreview && now > hardEndsAt
   };
 }
 
@@ -308,7 +308,7 @@ function startClock() {
       return;
     }
     if (state.hasLateAccess) {
-      els.examClock.textContent = "כניסה חריגה פעילה. אין שעת סגירה מוגדרת בקישור זה.";
+      els.examClock.textContent = `כניסה חריגה פעילה. ניתן להגיש עד ${formatTime(state.hardEndsAt)}.`;
       return;
     }
     if (state.isAfterDisplayedEnd && !state.hasExtension) {
